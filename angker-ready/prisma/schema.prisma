@@ -1,0 +1,498 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  IN_PROGRESS
+  COMPLETED
+  PARTIAL
+  CANCELLED
+  FAILED
+}
+enum TxType {
+  DEPOSIT
+  ORDER_DEBIT
+  REFUND
+  ADJUSTMENT
+  PROMO_CREDIT
+  REVERSAL
+}
+enum DepositStatus {
+  PENDING
+  VERIFYING
+  PAID
+  FAILED
+  EXPIRED
+  REVIEW_REQUIRED
+}
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_USER
+  RESOLVED
+  CLOSED
+}
+enum AdminRoleName {
+  OWNER
+  FINANCE
+  SUPPORT
+  SERVICE_MANAGER
+}
+
+model User {
+  id String @id @default(cuid())
+  username String @unique
+  email String @unique
+  passwordHash String
+  emailVerifiedAt DateTime?
+  status UserStatus @default(ACTIVE)
+  telegramChatId String?
+  telegramId String? @unique   // set when the user logs in with Telegram
+  googleId String? @unique     // Google account "sub", set when the user logs in with Google
+  createdAt DateTime @default(now())
+  sessions Session[]
+  wallet Wallet?
+  orders Order[]
+  deposits Deposit[]
+  tickets SupportTicket[]
+  resetTokens PasswordResetToken[]
+  verifyTokens EmailVerificationToken[]
+  redemptions CouponRedemption[]
+  notifications Notification[]
+  favorites Favorite[]
+  apiKey ApiKey?
+  digitalOrders DigitalOrder[]
+}
+model Session {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([userId])
+}
+model PasswordResetToken {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  usedAt DateTime?
+}
+model EmailVerificationToken {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  usedAt DateTime?
+}
+
+model Category {
+  id String @id @default(cuid())
+  name String @unique
+  active Boolean @default(true)
+  sort Int @default(0)
+  archivedAt DateTime?
+  services Service[]
+  packages Package[]
+}
+model Provider {
+  id String @id @default(cuid())
+  name String @unique
+  baseUrl String
+  apiKeyEnc String
+  enabled Boolean @default(true)
+  priority Int @default(0)
+  isDefault Boolean @default(false)
+  lastSyncAt DateTime?
+  mappings ProviderServiceMapping[]
+}
+model Service {
+  id String @id @default(cuid())
+  num Int @unique @default(autoincrement())  // short public service ID shown in the order form
+  categoryId String
+  category Category @relation(fields: [categoryId], references: [id])
+  name String
+  description String @default("")
+  minQty Int
+  maxQty Int
+  costPrice Decimal @db.Decimal(18,6)  // per 1000
+  sellPrice Decimal @db.Decimal(18,6)  // per 1000
+  refill Boolean @default(false)
+  cancel Boolean @default(false)
+  active Boolean @default(true)
+  manual Boolean @default(false)
+  startTime String @default("0-1 hour")
+  avgTime String @default("24 hours")
+  archivedAt DateTime?
+  mapping ProviderServiceMapping?
+  orders Order[]
+  packages Package[]
+  favorites Favorite[]
+  @@index([categoryId, active])
+}
+model ProviderServiceMapping {
+  id String @id @default(cuid())
+  serviceId String @unique
+  service Service @relation(fields: [serviceId], references: [id])
+  providerId String
+  provider Provider @relation(fields: [providerId], references: [id])
+  providerServiceId String
+  lastSyncAt DateTime?
+  @@unique([providerId, providerServiceId])
+}
+
+
+model Package {
+  id String @id @default(cuid())
+  name String
+  description String @default("")
+  categoryId String?
+  category Category? @relation(fields: [categoryId], references: [id])
+  serviceId String
+  service Service @relation(fields: [serviceId], references: [id])
+  quantity Int
+  price Decimal @db.Decimal(18,4)
+  imageUrl String?
+  sort Int @default(0)
+  active Boolean @default(true)
+  archivedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([active, sort])
+}
+
+
+model Favorite {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId String
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, serviceId])
+  @@index([userId])
+}
+
+model Wallet {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+  balance Decimal @default(0) @db.Decimal(18,4)
+  currency String @default("USD")
+  txs WalletTransaction[]
+}
+model WalletTransaction {
+  id String @id @default(cuid())
+  walletId String
+  wallet Wallet @relation(fields: [walletId], references: [id])
+  userId String
+  type TxType
+  amount Decimal @db.Decimal(18,4)   // signed: credit +, debit -
+  balanceAfter Decimal @db.Decimal(18,4)
+  currency String
+  reference String
+  description String @default("")
+  createdAt DateTime @default(now())
+  @@unique([type, reference])  // blocks duplicate credits
+  @@index([userId, createdAt])
+}
+model Deposit {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  method String
+  reference String @unique
+  amount Decimal @db.Decimal(18,4)
+  currency String
+  status DepositStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  paidAt DateTime?
+  qrString String?
+  cardImage String?
+  payUrl String?
+  expiresAt DateTime?
+  events PaymentEvent[]
+}
+model PaymentEvent {
+  id String @id @default(cuid())
+  depositId String?
+  deposit Deposit? @relation(fields: [depositId], references: [id])
+  eventId String @unique
+  payloadHash String
+  verified Boolean
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id String @id @default(cuid())
+  num Int @unique @default(autoincrement())  // numeric order ID returned by the reseller API (/api/v2)
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  serviceId String
+  service Service @relation(fields: [serviceId], references: [id])
+  serviceName String      // snapshots
+  target String
+  quantity Int
+  currency String
+  sellPrice Decimal @db.Decimal(18,4)
+  providerCost Decimal @db.Decimal(18,4)
+  providerRef String?
+  status OrderStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events OrderEvent[]
+  @@index([userId, createdAt])
+  @@index([status])
+}
+model OrderEvent {
+  id String @id @default(cuid())
+  orderId String
+  order Order @relation(fields: [orderId], references: [id])
+  kind String
+  detail Json?
+  createdAt DateTime @default(now())
+}
+
+model SupportTicket {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  category String
+  subject String
+  status TicketStatus @default(OPEN)
+  createdAt DateTime @default(now())
+  messages SupportMessage[]
+}
+model SupportMessage {
+  id String @id @default(cuid())
+  ticketId String
+  ticket SupportTicket @relation(fields: [ticketId], references: [id])
+  fromAdmin Boolean @default(false)
+  body String
+  createdAt DateTime @default(now())
+}
+model Announcement {
+  id String @id @default(cuid())
+  title String
+  body String
+  published Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+model Coupon {
+  id String @id @default(cuid())
+  code String @unique
+  kind String
+  value Decimal @db.Decimal(18,4)
+  startsAt DateTime?
+  expiresAt DateTime?
+  maxUses Int?
+  perUserLimit Int @default(1)
+  enabled Boolean @default(true)
+  redemptions CouponRedemption[]
+}
+model CouponRedemption {
+  id String @id @default(cuid())
+  couponId String
+  coupon Coupon @relation(fields: [couponId], references: [id])
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+model SiteSetting {
+  key String @id
+  value Json
+  updatedAt DateTime @updatedAt
+}
+
+model Admin {
+  id String @id @default(cuid())
+  telegramId String? @unique
+  username String? @unique
+  email String? @unique
+  passwordHash String?
+  displayName String?
+  roleId String
+  role AdminRole @relation(fields: [roleId], references: [id])
+  active Boolean @default(true)
+  lastLoginAt DateTime?
+  createdAt DateTime @default(now())
+  sessions AdminSession[]
+}
+
+model AdminSession {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  adminId String
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ip String?
+  userAgent String?
+  @@index([adminId])
+}
+model AdminRole {
+  id String @id @default(cuid())
+  name AdminRoleName @unique
+  admins Admin[]
+  permissions AdminPermission[]
+}
+model AdminPermission {
+  id String @id @default(cuid())
+  roleId String
+  role AdminRole @relation(fields: [roleId], references: [id])
+  permission String
+  @@unique([roleId, permission])
+}
+model AuditLog {
+  id String @id @default(cuid())
+  adminTelegramId String?
+  adminId String?
+  action String
+  entityType String
+  entityId String?
+  reason String?
+  result String
+  correlationId String
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@index([adminId])
+}
+model Notification {
+  id String @id @default(cuid())
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  audience String
+  kind String
+  body String
+  createdAt DateTime @default(now())
+}
+model IdempotencyKey {
+  key String @id
+  scope String
+  response Json?
+  createdAt DateTime @default(now())
+}
+model OutboxEvent {
+  id String @id @default(cuid())
+  kind String
+  payload Json
+  attempts Int @default(0)
+  processedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([processedAt])
+}
+model RateLimit {
+  key String @id
+  count Int
+  resetAt DateTime
+}
+model BotSession {
+  adminTelegramId String @id
+  state Json
+  expiresAt DateTime
+}
+
+/// Reseller API key: one per user. Only the SHA-256 hash is stored; the plain key is shown once when generated.
+model ApiKey {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyHash String @unique
+  prefix String                       // first characters, for display only
+  enabled Boolean @default(true)
+  ipWhitelist String[] @default([])   // empty = any IP
+  lastUsedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+
+model DigitalCategory {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  active    Boolean          @default(true)
+  sort      Int              @default(0)
+  products  DigitalProduct[]
+  createdAt DateTime         @default(now())
+}
+
+model DigitalSupplier {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  apiUrl    String           @default("")
+  apiKeyEnc String           @default("")
+  enabled   Boolean          @default(true)
+  note      String           @default("")
+  products  DigitalProduct[]
+  createdAt DateTime         @default(now())
+}
+
+model DigitalProduct {
+  id          String            @id @default(cuid())
+  name        String
+  price       Decimal           @db.Decimal(12, 4)
+  costPrice   Decimal           @default(0) @db.Decimal(12, 4)
+  emoji       String            @default("💎")
+  imageUrl    String            @default("")
+  stock       Int               @default(0)
+  delivery    String            @default("Instant")
+  deliveryMode String           @default("auto") // auto | manual
+  description String            @default("")
+  features    String            @default("")
+  active      Boolean           @default(true)
+  sort        Int               @default(0)
+  categoryId  String?
+  category    DigitalCategory?  @relation(fields: [categoryId], references: [id])
+  supplierId  String?
+  supplier    DigitalSupplier?  @relation(fields: [supplierId], references: [id])
+  codes       DigitalCode[]
+  orders      DigitalOrder[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model DigitalCode {
+  id        String         @id @default(cuid())
+  productId String
+  product   DigitalProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  code      String
+  usedAt    DateTime?
+  orderId   String?
+  createdAt DateTime       @default(now())
+  @@index([productId, usedAt])
+}
+
+model DigitalOrder {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  productId       String
+  product         DigitalProduct @relation(fields: [productId], references: [id])
+  productName     String
+  quantity        Int
+  unitPrice       Decimal        @db.Decimal(12, 4)
+  totalPrice      Decimal        @db.Decimal(12, 4)
+  costTotal       Decimal        @default(0) @db.Decimal(12, 4)
+  status          String         @default("PENDING") // PENDING PROCESSING COMPLETED FAILED CANCELLED
+  deliveryPayload String?
+  deliveryMode    String         @default("auto")
+  adminNote       String         @default("")
+  refunded        Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  @@index([userId, createdAt])
+  @@index([productId])
+  @@index([status])
+}
