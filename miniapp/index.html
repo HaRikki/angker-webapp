@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#060a10" />
+  <title>AngKer Shop</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/css/style.css?v=20260926editsvc" />
+  <link rel="stylesheet" href="/css/admin.css?v=20261106">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <div class="ui-version-tag">AngKer · Tech UI</div>
+    <div id="splash" class="splash">
+      <div class="splash-logo" id="splash-ico"></div>
+      <div class="splash-title">AngKer Shop</div>
+      <div class="spinner"></div>
+    </div>
+
+    <main id="main" class="main hidden">
+      <!-- HOME -->
+      <section id="page-home" class="page active">
+        <div class="content-pad" style="padding-bottom:0">
+          <div class="search-row">
+            <input id="global-search" class="input" type="search" placeholder="🔍 ស្វែងរក Service / Store..." />
+            <button type="button" class="icon-btn" id="btn-notif" title="Notifications"></button>
+          </div>
+          <div id="search-results" class="list hidden"></div>
+          <div id="favorites-section" class="hidden">
+            <div class="section-title">⭐ សេវាញឹកញាប់</div>
+            <div id="favorites-list" class="list horiz"></div>
+          </div>
+        </div>
+
+        <header class="profile-header glass">
+          <div class="ph-left">
+            <div class="avatar avatar-lg anim-pulse" id="home-avatar">H</div>
+            <div class="ph-info">
+              <div class="ph-name" id="home-username">User</div>
+              <div class="ph-id" id="home-userid">ID: —</div>
+            </div>
+          </div>
+          <div class="ph-right">
+            <select id="lang-select-home" class="lang-pill" title="Language">
+              <option value="km">ខ្មែរ</option>
+              <option value="en">EN</option>
+            </select>
+            <button class="icon-btn" id="btn-theme" title="Theme" type="button"></button>
+          </div>
+        </header>
+
+        <div class="balance-card glass anim-float">
+          <div class="bc-top">
+            <div>
+              <div class="bc-label"><span class="ico-wrap anim-bounce" data-ico="dollar"></span> សមតុល្យ</div>
+              <div class="bc-amount" id="home-balance">$0.00</div>
+            </div>
+            <button class="btn btn-primary btn-sm btn-glow" id="btn-add-funds-home" type="button">
+              <span class="ico-wrap anim-spin-slow" data-ico="plus" data-size="16"></span> បញ្ចូល
+            </button>
+          </div>
+          <div class="bc-meta">
+            <span>📦 Orders: <strong id="home-orders-count">0</strong></span>
+            <span id="home-greeting">សួស្តី</span>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card glass stat-c1">
+            <div class="stat-ico anim-bounce" data-ico="package" data-size="18"></div>
+            <div class="stat-val" id="stat-total">0</div>
+            <div class="stat-lbl">សរុប</div>
+          </div>
+          <div class="stat-card glass stat-c2">
+            <div class="stat-ico anim-bounce" data-ico="activity" data-size="18"></div>
+            <div class="stat-val" id="stat-active">0</div>
+            <div class="stat-lbl">កំពុងដំណើរ</div>
+          </div>
+          <div class="stat-card glass stat-c3">
+            <div class="stat-ico anim-bounce" data-ico="check" data-size="18"></div>
+            <div class="stat-val" id="stat-done">0</div>
+            <div class="stat-lbl">រួចរាល់</div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="ico-wrap" data-ico="flame" data-size="14"></span> សេវាកម្មពេញនិយម</div>
+        <div class="quick-grid" id="popular-services"></div>
+
+        <div class="section-title">រហ័ស</div>
+        <div class="quick-actions">
+          <button class="qa-btn qa-blue anim-btn" data-nav="services" type="button">
+            <span class="qa-ico anim-icon" data-ico="services"></span>
+            <span>Service</span>
+          </button>
+          <button class="qa-btn qa-purple anim-btn" data-nav="store" type="button">
+            <span class="qa-ico anim-icon" data-ico="store"></span>
+            <span>Store</span>
+          </button>
+          <button class="qa-btn qa-green anim-btn" data-nav="orders" type="button">
+            <span class="qa-ico anim-icon" data-ico="package"></span>
+            <span>Order</span>
+          </button>
+          <button class="qa-btn qa-orange anim-btn" data-nav="services" type="button">
+            <span class="qa-ico anim-icon" data-ico="cart"></span>
+            <span>New Order</span>
+          </button>
+          <button class="qa-btn qa-teal anim-btn" data-nav="wallet" type="button">
+            <span class="qa-ico anim-icon" data-ico="wallet"></span>
+            <span>Wallet</span>
+          </button>
+          <button class="qa-btn qa-pink anim-btn" data-nav="account" type="button">
+            <span class="qa-ico anim-icon" data-ico="user"></span>
+            <span>Account</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- SERVICES -->
+      <section id="page-services" class="page">
+        <header class="top-bar">
+          <h1><span class="ico-wrap" data-ico="services" data-size="18"></span> SMM Services</h1>
+        </header>
+        <div class="content-pad smm-order-page">
+          <!-- Platform grid 2 cols -->
+          <div class="plat-grid" id="platform-grid"></div>
+
+          <!-- New Order panel -->
+          <div class="smm-card">
+            <div class="smm-tabs">
+              <button type="button" class="smm-tab active" id="tab-new"><span data-ico="cart" data-size="16"></span> New Order</button>
+              <button type="button" class="smm-tab muted" id="tab-mass" disabled><span data-ico="flame" data-size="16"></span> Mass order</button>
+            </div>
+
+            <div class="smm-search">
+              <span class="smm-search-ico"><span data-ico="search" data-size="14"></span></span>
+              <input type="search" id="smm-search" placeholder="Search" autocomplete="off" />
+            </div>
+
+            <label class="smm-label"><span data-ico="services" data-size="14"></span> Category</label>
+            <button type="button" class="smm-select" id="smm-category-btn">
+              <span id="smm-category-text">ជ្រើស Category...</span>
+              <span class="smm-chevron">▾</span>
+            </button>
+            <div class="smm-dropdown hidden" id="smm-category-list"></div>
+
+            <label class="smm-label"><span data-ico="package" data-size="14"></span> Service</label>
+            <button type="button" class="smm-select" id="smm-service-btn">
+              <span id="smm-service-text">ជ្រើស Service...</span>
+              <span class="smm-chevron">▾</span>
+            </button>
+            <div class="smm-dropdown hidden" id="smm-service-list"></div>
+
+            <label class="smm-label">Link</label>
+            <input class="smm-input" id="smm-link" type="url" placeholder="https://… / @username / t.me/…" autocomplete="off" />
+
+            <label class="smm-label">Quantity</label>
+            <input class="smm-input" id="smm-qty" type="number" inputmode="numeric" placeholder="0" />
+            <div class="smm-hint" id="smm-qty-hint">Min: — – Max: —</div>
+
+            <label class="smm-label">Charge</label>
+            <div class="smm-charge" id="smm-charge">$0.00</div>
+
+            <button type="button" class="smm-submit" id="smm-submit">Submit</button>
+          <div id="mass-order-box" class="card" style="cursor:default;margin:12px 0">
+            <div class="section-title" style="margin:0 0 8px">📋 Mass Order (ច្រើន Link)</div>
+            <textarea id="mass-links" class="input" rows="4" placeholder="ដាក់ Link មួយក្នុងមួយបន្ទាត់ (អតិបរមា 50)"></textarea>
+            <button class="btn btn-primary btn-block" type="button" id="btn-mass-order" style="margin-top:8px">
+              បញ្ជាទិញទាំងអស់
+            </button>
+            <div id="mass-result" class="of-note hidden" style="margin-top:8px"></div>
+          </div>
+
+          </div>
+
+          <!-- More details -->
+          <div class="smm-card smm-details" id="smm-details">
+            <div class="smm-detail-row"><span class="dot pink"></span> <b>Example Link</b><div id="smm-ex-link">—</div></div>
+            <div class="smm-detail-row"><span class="dot blue"></span> <b>Start Time</b><div id="smm-start">—</div></div>
+            <div class="smm-detail-row"><span class="dot purple"></span> <b>Speed</b><div id="smm-speed">—</div></div>
+            <div class="smm-detail-row"><span class="dot green"></span> <b>Guarantee</b><div id="smm-guarantee">—</div></div>
+            <div class="smm-detail-row"><span class="dot navy"></span> <b>Average Time</b><div id="smm-avg">—</div></div>
+            <div class="smm-more">
+              <div class="smm-more-title">More Details</div>
+              <div id="smm-more-body">ជ្រើស Service ដើម្បីមើលព័ត៌មានលម្អិត</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-service-detail" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1 id="svc-detail-title">Service</h1>
+        </header>
+        <div id="svc-detail-body" class="content-pad"></div>
+      </section>
+
+      <section id="page-order-confirm" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>បញ្ជាក់ការកុម្មង់</h1>
+        </header>
+        <div id="order-confirm-body" class="content-pad"></div>
+
+      </section>
+
+      <!-- STORE -->
+      <section id="page-store" class="page">
+        <header class="top-bar">
+          <h1><span class="ico-wrap" data-ico="store" data-size="18"></span> Digital Store</h1>
+        </header>
+        <div id="products-list" class="list"></div>
+        <div class="section-title"><span class="ico-wrap" data-ico="inbox" data-size="14"></span> ការកុម្មង់ Digital</div>
+        <div id="digital-orders-list" class="list"></div>
+      </section>
+
+      <section id="page-product-detail" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1 id="prod-detail-title">Product</h1>
+        </header>
+        <div id="prod-detail-body" class="content-pad"></div>
+      </section>
+
+      <!-- ORDERS -->
+
+      <!-- NEW ORDER (panel form) -->
+      <section id="page-order" class="page">
+        <header class="top-bar">
+          <h1><span class="ico-wrap anim-icon" data-ico="cart" data-size="18"></span> New Order</h1>
+        </header>
+        <div class="content-pad" id="order-page-body">
+          <div class="platform-grid" id="order-platform-grid"></div>
+          <div class="search-bar" style="margin-top:12px">
+            <div class="search-input-wrap">
+              <span class="search-ico" data-ico="search" data-size="18"></span>
+              <input type="search" id="order-svc-search" placeholder="Search service..." autocomplete="off" />
+            </div>
+          </div>
+          <div id="order-svc-list" class="list"></div>
+        </div>
+      </section>
+
+      <section id="page-orders" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-nav="home" type="button"></button>
+          <h1>ការបញ្ជាទិញ</h1>
+        </header>
+        <div class="content-pad">
+          <div class="section-title">ស្ថានភាពការបញ្ជាទិញ</div>
+
+          <div class="ord-status-wrap">
+            <div class="ord-status-row">
+              <button type="button" class="ord-chip ord-all active" data-status="all">All <b data-count="all">0</b></button>
+              <button type="button" class="ord-chip ord-pending" data-status="Pending">Pending <b data-count="Pending">0</b></button>
+              <button type="button" class="ord-chip ord-progress" data-status="In Progress">In Progress <b data-count="In Progress">0</b></button>
+              <button type="button" class="ord-chip ord-processing" data-status="Processing">Processing <b data-count="Processing">0</b></button>
+            </div>
+            <div class="ord-status-row">
+              <button type="button" class="ord-chip ord-completed" data-status="Completed">Completed <b data-count="Completed">0</b></button>
+              <button type="button" class="ord-chip ord-failed" data-status="Failed">Failed <b data-count="Failed">0</b></button>
+              <button type="button" class="ord-chip ord-canceled" data-status="Canceled">Canceled <b data-count="Canceled">0</b></button>
+            </div>
+            <div class="ord-status-row">
+              <button type="button" class="ord-chip ord-action" id="btn-order-search"><span data-ico="search" data-size="14"></span> Search Order</button>
+              <button type="button" class="ord-chip ord-action" id="btn-order-track">តាមដាន Order</button>
+              <button type="button" class="ord-chip ord-action" id="btn-order-refresh">Refresh Status</button>
+            </div>
+            <div class="ord-status-row">
+              <button type="button" class="ord-chip ord-refund" id="btn-order-refund">ស្នើសុំសងប្រាក់</button>
+              <button type="button" class="ord-chip ord-back" data-nav="home">ត្រលប់</button>
+            </div>
+          </div>
+
+          <div id="order-search-box" class="search-bar hidden" style="margin-top:12px">
+            <div class="search-input-wrap">
+              <span class="search-ico" data-ico="search" data-size="18"></span>
+              <input type="search" id="order-id-search" placeholder="Order ID / Link..." autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top:16px">បញ្ជី Order</div>
+          <div id="orders-list" class="list"></div>
+        </div>
+      </section>
+
+      <section id="page-order-detail" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>លម្អិត</h1>
+        </header>
+        <div id="order-detail-body" class="content-pad"></div>
+      </section>
+
+      <!-- WALLET -->
+      <section id="page-wallet" class="page">
+        <header class="top-bar">
+          <h1><span class="ico-wrap" data-ico="wallet" data-size="18"></span> Wallet</h1>
+        </header>
+        <div class="balance-card glass">
+          <div class="bc-label">សមតុល្យបច្ចុប្បន្ន</div>
+          <div class="bc-amount" id="wallet-balance">$0.00</div>
+        </div>
+        <div class="content-pad">
+          <label class="field-label">ចំនួនទឹកប្រាក់ (USD)</label>
+          <div class="amount-presets">
+            <button class="preset" data-amt="1" type="button">$1</button>
+            <button class="preset" data-amt="5" type="button">$5</button>
+            <button class="preset" data-amt="10" type="button">$10</button>
+            <button class="preset" data-amt="20" type="button">$20</button>
+            <button class="preset" data-amt="50" type="button">$50</button>
+          </div>
+          <input type="number" id="deposit-amount" class="input" placeholder="0.00" min="0.1" step="0.01" inputmode="decimal" />
+          <button class="btn btn-primary btn-block" id="btn-create-deposit" type="button" style="margin-top:12px">
+            <span class="ico-wrap" data-ico="send" data-size="16"></span> បញ្ជាក់ — ផ្ញើ QR តាម Bot
+          </button>
+          <div id="deposit-result" class="hidden" style="margin-top:16px"></div>
+          <p class="field-label" style="margin-top:12px;line-height:1.45">
+            បន្ទាប់ពីបញ្ជាក់ Bot នឹងផ្ញើ QR ទៅ Telegram chat របស់អ្នក។ ស្កេន QR ក្នុង Bot (មិនមែនក្នុង Mini App)។
+          </p>
+          <div class="section-title">ប្រវត្តិបញ្ចូលទឹកប្រាក់</div>
+          
+          <div class="section-title">🎁 Promo Code</div>
+          <div class="row-flex" style="gap:8px;margin-bottom:12px">
+            <input id="promo-code" class="input" placeholder="បញ្ចូល code..." style="flex:1" />
+            <button class="btn btn-primary" type="button" id="btn-promo">OK</button>
+          </div>
+          <div class="section-title">📦 Digital Orders</div>
+          <div id="digital-orders-list" class="list"></div>
+          <div class="section-title">ប្រវត្តិដាក់ប្រាក់</div>
+          <div id="deposit-history" class="list"></div>
+        </div>
+      </section>
+
+      <!-- ACCOUNT -->
+      <section id="page-account" class="page">
+        <header class="top-bar">
+          <h1><span class="ico-wrap" data-ico="user" data-size="18"></span> គណនី</h1>
+        </header>
+        <div class="content-pad">
+          <div class="profile-card glass">
+            <div class="avatar lg" id="acc-avatar">H</div>
+            <div class="profile-name" id="acc-name">—</div>
+            <div class="profile-user" id="acc-username">@—</div>
+            <div class="profile-id">ID: <span id="acc-id">—</span></div>
+          </div>
+          <div class="info-rows">
+            <div class="info-row"><span>សមតុល្យ</span><strong id="acc-balance">$0</strong></div>
+            <div class="info-row"><span>សរុបកុម្មង់</span><strong id="acc-orders">0</strong></div>
+            <div class="info-row"><span>រួចរាល់</span><strong id="acc-completed">0</strong></div>
+          </div>
+          <div class="section-title"><span class="ico-wrap" data-ico="settings" data-size="14"></span> ការកំណត់</div>
+          <div class="settings-list">
+            <div class="setting-row">
+              <span>ភាសា</span>
+              <select id="lang-select" class="select-sm">
+                <option value="km">ខ្មែរ</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <span>Dark Mode</span>
+              <label class="switch">
+                <input type="checkbox" id="theme-toggle" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <button class="btn btn-outline btn-block" id="btn-support" type="button" style="margin-top:16px">
+            <span class="ico-wrap" data-ico="ticket" data-size="16"></span> Support / Tickets
+          </button>
+          <button class="btn btn-primary btn-block hidden" id="btn-admin-panel" type="button" style="margin-top:12px">
+            <span class="ico-wrap" data-ico="settings" data-size="16"></span> ⚙️ Admin Panel
+          </button>
+        </div>
+      </section>
+
+      <!-- ADMIN PANEL — full feature views (rendered by js/admin.js) -->
+      <section id="page-admin-x" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" id="admin-x-back" type="button"></button>
+          <h1 id="admin-x-title">Admin</h1>
+        </header>
+        <div class="content-pad" id="admin-x-body"></div>
+      </section>
+
+      <!-- ADMIN PANEL (ADMIN_ID only) -->
+      <section id="page-admin" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1><span class="ico-wrap" data-ico="settings" data-size="18"></span> Admin Panel</h1>
+        </header>
+        <div class="content-pad">
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-title">📦 Service WebApp</div>
+            <div class="card-meta" style="margin-top:6px">គ្រប់គ្រង Category / Service សម្រាប់ Mini App</div>
+            <button class="btn btn-primary btn-block" id="btn-admin-wa" type="button" style="margin-top:12px">
+              បើក Service WebApp
+            </button>
+          </div>
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-title">➕ Add Full Service</div>
+            <div class="card-meta" style="margin-top:6px">Provider → ទាញ Service → កំណត់តម្លៃ → Publish</div>
+            <button class="btn btn-primary btn-block" id="btn-admin-full" type="button" style="margin-top:12px">
+              ➕ Add Full Service
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-admin-full" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>➕ Add Full Service</h1>
+        </header>
+        <div class="content-pad">
+          <div class="section-title">1. ជ្រើស Provider</div>
+          <div id="admin-provider-list" class="list"></div>
+          <div id="admin-full-actions" class="hidden" style="margin-top:14px">
+            <div class="section-title">2. សកម្មភាព</div>
+            <div class="row" style="gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" id="btn-fs-fetch" type="button">ទាញយកថ្មី</button>
+              <button class="btn btn-outline" id="btn-fs-old" type="button">សេវាកម្មចាស់</button>
+              <button class="btn btn-outline" id="btn-fs-deleted" type="button">សេវាកម្មបានលុប</button>
+              <button class="btn btn-outline" id="btn-fs-disabled" type="button">សេវាកម្មបានបិទ</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-admin-full-pick" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>ទាញយកថ្មី</h1>
+        </header>
+        <div class="content-pad">
+          <div id="fs-loading" class="note">Importing Services...</div>
+          <div id="fs-toolbar" class="hidden">
+            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+              <label class="row" style="gap:8px;align-items:center">
+                <input type="checkbox" id="fs-select-all" />
+                <span>☑️ រើសយកទាំងអស់</span>
+              </label>
+              <span id="fs-selected-count" class="note">Selected: 0 / 0</span>
+            </div>
+            <div class="row" style="gap:8px;margin-bottom:10px;flex-wrap:wrap">
+              <button class="btn btn-outline" id="btn-fs-price" type="button">កំណត់តម្លៃជា (%/$)</button>
+              <button class="btn btn-primary" id="btn-fs-done" type="button">Done</button>
+            </div>
+            <div id="fs-price-box" class="card hidden" style="margin-bottom:10px">
+              <div class="row" style="gap:8px;margin-bottom:8px">
+                <button class="btn btn-outline" id="btn-fs-pt-pct" type="button">%</button>
+                <button class="btn btn-outline" id="btn-fs-pt-flat" type="button">$</button>
+              </div>
+              <div id="fs-profit-hint" class="note" style="margin-bottom:6px"></div>
+              <input class="input" id="fs-profit-val" type="number" step="0.01" placeholder="Profit value" />
+              <button class="btn btn-primary btn-block" id="btn-fs-apply-price" type="button" style="margin-top:8px">Apply Preview</button>
+            </div>
+            <div id="fs-preview" class="card hidden" style="margin-bottom:10px;overflow:auto;max-height:220px"></div>
+          </div>
+          <div id="fs-cat-list" class="list"></div>
+        </div>
+      </section>
+
+      <section id="page-admin-full-list" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1 id="fs-list-title">Services</h1>
+        </header>
+        <div class="content-pad">
+          <input class="input" id="fs-list-search" placeholder="Search..." style="margin-bottom:10px" />
+          <div id="fs-list-body" class="list"></div>
+        </div>
+      </section>
+
+      <section id="page-admin-wa" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>📦 Service WebApp</h1>
+        </header>
+        <div class="content-pad">
+          <div class="row" style="gap:8px;margin-bottom:12px">
+            <input class="input" id="admin-plat-name" placeholder="Category name e.g. Instagram" />
+            <button class="btn btn-primary" id="btn-admin-add-plat" type="button">➕</button>
+          </div>
+          <div id="admin-plat-list" class="list"></div>
+          <div class="row" style="gap:8px;margin-top:12px;justify-content:center" id="admin-plat-nav"></div>
+          <button class="btn btn-danger btn-block" id="btn-admin-del-all-wa" type="button" style="margin-top:16px">
+            ❌ Delete Service All (WebApp)
+          </button>
+        </div>
+      </section>
+
+      <section id="page-admin-wa-svc" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1 id="admin-wa-svc-title">Services</h1>
+        </header>
+        <div class="content-pad">
+          <button class="btn btn-outline btn-block" id="btn-admin-add-svc" type="button" style="margin-bottom:12px">
+            ➕ Add Service
+          </button>
+          <div id="admin-svc-list" class="list"></div>
+          <div class="row" style="gap:8px;margin-top:12px;justify-content:center" id="admin-svc-nav"></div>
+        </div>
+      </section>
+
+      <section id="page-admin-wa-edit" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>✏️ Edit Service</h1>
+        </header>
+        <div class="content-pad">
+          <div class="field"><label>Name</label><input class="input" id="adm-svc-name" /></div>
+          <div class="field"><label>Category / Group (Menu 2)</label><input class="input" id="adm-svc-group" placeholder="e.g. Followers" /></div>
+          <div class="field"><label>Selling Price / 1K (USD)</label><input class="input" id="adm-svc-price" type="number" step="0.0001" /></div>
+          <div class="field"><label>Cost Price / 1K (Panel)</label><input class="input" id="adm-svc-cost" type="number" step="0.0001" /></div>
+          <div class="field"><label>Profit Type</label>
+            <select class="input" id="adm-svc-profit-type">
+              <option value="flat">Flat $</option>
+              <option value="percent">Percent %</option>
+            </select>
+          </div>
+          <div class="field"><label>Profit Value</label><input class="input" id="adm-svc-profit-val" type="number" step="0.01" placeholder="0.10 or 50" /></div>
+          <div class="field"><label>SMM Service ID</label><input class="input" id="adm-svc-smmid" /></div>
+          <div class="field"><label>SMM Panel ID (API Key)</label><input class="input" id="adm-svc-panel" type="number" min="1" placeholder="1" /></div>
+          <div class="field"><label>Min Qty</label><input class="input" id="adm-svc-min" type="number" /></div>
+          <div class="field"><label>Max Qty</label><input class="input" id="adm-svc-max" type="number" /></div>
+          <div class="field"><label>Status</label>
+            <select class="input" id="adm-svc-disabled">
+              <option value="0">🟢 Active</option>
+              <option value="1">🔴 Disabled</option>
+            </select>
+          </div>
+          <div class="field"><label>Description</label><textarea class="input" id="adm-svc-desc" rows="3"></textarea></div>
+          <button class="btn btn-primary btn-block" id="btn-adm-svc-save" type="button">💾 Save</button>
+          <button class="btn btn-danger btn-block" id="btn-adm-svc-del" type="button" style="margin-top:10px">❌ Delete Service</button>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section id="page-notifications" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1>ការជូនដំណឹង</h1>
+        </header>
+        <div class="content-pad">
+          <div id="notif-list" class="list"></div>
+        </div>
+      </section>
+
+      <!-- SUPPORT -->
+      <section id="page-support" class="page">
+        <header class="top-bar">
+          <button class="icon-btn back-btn" data-back type="button"></button>
+          <h1><span class="ico-wrap" data-ico="ticket" data-size="18"></span> Support</h1>
+        </header>
+        <div class="content-pad">
+          <div class="section-title">បង្កើត Ticket</div>
+          <select id="ticket-cat" class="input">
+            <option value="order">បញ្ហាកុម្មង់</option>
+            <option value="payment">បញ្ហាទូទាត់</option>
+            <option value="service">សេវាកម្ម</option>
+            <option value="other">ផ្សេងៗ</option>
+          </select>
+          <textarea id="ticket-msg" class="input" rows="4" placeholder="សរសេរសារ..." style="margin-top:8px"></textarea>
+          <button class="btn btn-primary btn-block" id="btn-send-ticket" type="button" style="margin-top:8px">
+            <span class="ico-wrap" data-ico="send" data-size="16"></span> ផ្ញើ
+          </button>
+          <div class="section-title">Tickets របស់ខ្ញុំ</div>
+          <div id="tickets-list" class="list"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav id="bottom-nav" class="bottom-nav hidden">
+      <button class="nav-item nav-home active" data-nav="home" type="button">
+        <span class="nav-ico anim-icon" data-ico="home"></span>
+        <small>Home</small>
+      </button>
+      <button class="nav-item nav-service" data-nav="services" type="button">
+        <span class="nav-ico anim-icon" data-ico="services"></span>
+        <small>Service</small>
+      </button>
+      <button class="nav-item nav-store" data-nav="store" type="button">
+        <span class="nav-ico anim-icon" data-ico="store"></span>
+        <small>Store</small>
+      </button>
+      <button class="nav-item nav-order" data-nav="orders" type="button">
+        <span class="nav-ico anim-icon" data-ico="package"></span>
+        <small>Order</small>
+      </button>
+      <button class="nav-item nav-wallet" data-nav="wallet" type="button">
+        <span class="nav-ico anim-icon" data-ico="wallet"></span>
+        <small>Wallet</small>
+      </button>
+      <button class="nav-item nav-account" data-nav="account" type="button">
+        <span class="nav-ico anim-icon" data-ico="user"></span>
+        <small>Account</small>
+      </button>
+    </nav>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="/js/icons.js?v=20260926editsvc"></script>
+  <script src="/js/i18n.js?v=20260926editsvc"></script>
+  <script src="/js/api.js?v=20260926editsvc"></script>
+  <script src="/js/app.js?v=20260926editsvc"></script>
+  <script src="/js/admin.js?v=20261107"></script>
+  <script src="/js/admin_smm.js?v=20261107"></script>
+</body>
+</html>
